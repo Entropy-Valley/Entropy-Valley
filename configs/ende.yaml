@@ -1,0 +1,50 @@
+# LaDiT Configuration: English -> German
+# LLaDA-8B-Base masked-diffusion MT with LoRA SFT and Entropy-Valley decoding.
+# NOTE: En->De uses 200k parallel pairs (matched-scale with En<->Zh); absolute
+# quality is not intended as a SoTA claim and reflects the harder target language.
+
+model:
+  path: /path/to/LLaDA-8B-Base
+  use_lora: true
+  lora_rank: 64
+  lora_alpha: 128
+  lora_dropout: 0.05
+
+data:
+  train: data/ende_train.jsonl
+  dev: data/ende_dev.jsonl
+  max_seq_len: 1024
+  noise_schedule: uniform
+  lang_pair: en-de
+
+training:
+  batch_size: 4
+  gradient_accumulation_steps: 4
+  learning_rate: 2.0e-4
+  weight_decay: 0.01
+  num_epochs: 3
+  warmup_ratio: 0.05
+  lr_scheduler: cosine
+  max_grad_norm: 1.0
+  seed: 42
+  bf16: true
+
+checkpointing:
+  output_dir: checkpoints/ende
+  save_steps: 500
+  eval_steps: 500
+  logging_steps: 10
+
+wandb:
+  enabled: false
+  project: ladit
+  entity: YOUR_WANDB_ENTITY
+  run_name: ladit_ende
+
+evaluation:
+  test_sets:
+    - data/wmt22_ende_test.jsonl
+  metrics: [bleu, comet22]
+  comet_model: Unbabel/wmt22-comet-da
+  length_ratio_baseline: 1.8
+  ev_candidate_ratios: "1.50,1.60,1.70,1.80,1.90"

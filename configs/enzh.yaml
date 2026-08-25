@@ -1,0 +1,49 @@
+# LaDiT Configuration: English -> Chinese
+# LLaDA-8B-Base masked-diffusion MT with LoRA SFT and Entropy-Valley decoding.
+
+model:
+  path: /path/to/LLaDA-8B-Base           # change to your local LLaDA-8B checkpoint
+  use_lora: true
+  lora_rank: 64
+  lora_alpha: 128
+  lora_dropout: 0.05
+
+data:
+  train: data/enzh_train.jsonl
+  dev: data/enzh_dev.jsonl
+  max_seq_len: 1024
+  noise_schedule: uniform
+  lang_pair: en-zh
+
+training:
+  batch_size: 4
+  gradient_accumulation_steps: 4
+  learning_rate: 2.0e-4
+  weight_decay: 0.01
+  num_epochs: 3
+  warmup_ratio: 0.05
+  lr_scheduler: cosine
+  max_grad_norm: 1.0
+  seed: 42
+  bf16: true
+
+checkpointing:
+  output_dir: checkpoints/enzh
+  save_steps: 500
+  eval_steps: 500
+  logging_steps: 10
+
+wandb:
+  enabled: false                         # set true and fill entity/project
+  project: ladit
+  entity: YOUR_WANDB_ENTITY
+  run_name: ladit_enzh
+
+evaluation:
+  test_sets:
+    - data/wmt22_enzh_test.jsonl
+  metrics: [bleu, comet22]
+  comet_model: Unbabel/wmt22-comet-da
+  # Length methods to compare
+  length_ratio_baseline: 0.8
+  ev_candidate_ratios: "0.70,0.75,0.80,0.85,0.90"   # EV candidate ratio grid R

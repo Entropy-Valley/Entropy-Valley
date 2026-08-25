@@ -1,0 +1,12 @@
+[
+  {
+    "_comment_about_this_file": "Fictitious example illustrating the per-row schema of a system_mapping.json file. The actual mappings used in the paper for the En->Zh and Zh->En packs are NOT released. Each row records (a) the post-shuffle ID shown to annotators, (b) the original test-set index for source/reference lookup, (c) which method appears in slot A vs slot B (independent Bernoulli(0.5) coin flip), and (d) the stratification bucket label (kept private during annotation).",
+    "_direction_note": "Build one such file per direction (e.g. system_mapping_enzh.json, system_mapping_zhen.json). Both files have the same schema; only the underlying source/reference text differs."
+  },
+
+  {"ID": 1, "original_idx": 1632, "system_a": "EV",    "system_b": "ratio", "bucket": "EV-best",    "_note": "fictitious row; coin-flip put EV in slot A; ΔCOMET large positive"},
+  {"ID": 2, "original_idx":  288, "system_a": "ratio", "system_b": "EV",    "bucket": "EV-best",    "_note": "fictitious row; coin-flip put EV in slot B"},
+  {"ID": 3, "original_idx":  663, "system_a": "EV",    "system_b": "ratio", "bucket": "Ratio-best", "_note": "fictitious row; ΔCOMET clearly negative"},
+  {"ID": 4, "original_idx": 1738, "system_a": "ratio", "system_b": "EV",    "bucket": "Tied",       "_note": "fictitious row; small non-zero |ΔCOMET|"},
+  {"ID": 5, "original_idx":  396, "system_a": "EV",    "system_b": "ratio", "bucket": "Random",     "_note": "fictitious row; uniform draw from remaining indices"}
+]

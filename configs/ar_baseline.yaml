@@ -1,0 +1,60 @@
+# AR matched baseline: LLaMA-3-8B-Base + LoRA, same 200k SFT data, same 3-epoch schedule.
+# Used to show the EV finding is masked-diffusion specific, not an artifact of
+# under-trained decoders. All training hyperparameters mirror configs/{enzh,zhen,ende}.yaml
+# except for backbone and target_modules (7 modules covering LLaMA q/k/v/o + MLP).
+#
+# Run with: bash scripts/run_ar_baseline.sh <en-zh|zh-en|en-de> <seed> <run_id>
+# Decode+eval: bash scripts/decode_ar_eval.sh <run_id> <lang_pair> <seed> <run_dir>
+
+model:
+  path: /path/to/Meta-Llama-3-8B-Base
+  backbone: llama3-8b
+  use_lora: true
+  lora_rank: 64
+  lora_alpha: 128
+  lora_dropout: 0.05
+  # 7-module LoRA on LLaMA (vs LLaDA's q/k/v/o/ff/up/ff_out).
+  target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+data:
+  # Identical files to LLaDA SFT (configs/enzh.yaml etc.); 200k pairs for En<->Zh,
+  # 200k pairs for En->De (same matched-scale corpus as the diffusion runs).
+  train: data/enzh_train.jsonl
+  dev: data/enzh_dev.jsonl
+  max_seq_len: 1024
+  lang_pair: en-zh   # override on CLI per direction
+
+training:
+  batch_size: 4                     # per GPU
+  gradient_accumulation_steps: 4    # effective batch = 4 * 8 * 4 = 128 (same as LLaDA SFT)
+  learning_rate: 2.0e-4
+  weight_decay: 0.01
+  num_epochs: 3
+  warmup_ratio: 0.05
+  lr_scheduler: cosine
+  max_grad_norm: 1.0
+  seed: 42
+  bf16: true
+  gradient_checkpointing: true
+
+checkpointing:
+  output_dir: checkpoints/ar_baseline
+  save_steps: 500
+  save_total_limit: 2
+  logging_steps: 10
+
+wandb:
+  enabled: false
+  project: ladit
+  entity: YOUR_WANDB_ENTITY
+  run_name: ar_baseline
+
+decoding:
+  # Standard AR beam search; no length selection.
+  num_beams: 4
+  max_new_tokens: 256
+  batch_size: 4
+
+evaluation:
+  metrics: [bleu, comet22]
+  comet_model: Unbabel/wmt22-comet-da

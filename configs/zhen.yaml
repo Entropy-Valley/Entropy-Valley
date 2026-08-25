@@ -1,0 +1,48 @@
+# LaDiT Configuration: Chinese -> English
+# LLaDA-8B-Base masked-diffusion MT with LoRA SFT and Entropy-Valley decoding.
+
+model:
+  path: /path/to/LLaDA-8B-Base
+  use_lora: true
+  lora_rank: 64
+  lora_alpha: 128
+  lora_dropout: 0.05
+
+data:
+  train: data/enzh_train.jsonl           # same parallel corpus, swapped source/target
+  dev: data/enzh_dev.jsonl
+  max_seq_len: 1024
+  noise_schedule: uniform
+  lang_pair: zh-en
+
+training:
+  batch_size: 4
+  gradient_accumulation_steps: 4
+  learning_rate: 2.0e-4
+  weight_decay: 0.01
+  num_epochs: 3
+  warmup_ratio: 0.05
+  lr_scheduler: cosine
+  max_grad_norm: 1.0
+  seed: 42
+  bf16: true
+
+checkpointing:
+  output_dir: checkpoints/zhen
+  save_steps: 500
+  eval_steps: 500
+  logging_steps: 10
+
+wandb:
+  enabled: false
+  project: ladit
+  entity: YOUR_WANDB_ENTITY
+  run_name: ladit_zhen
+
+evaluation:
+  test_sets:
+    - data/wmt22_enzh_test.jsonl
+  metrics: [bleu, comet22]
+  comet_model: Unbabel/wmt22-comet-da
+  length_ratio_baseline: 1.2
+  ev_candidate_ratios: "1.00,1.10,1.20,1.30,1.40"
